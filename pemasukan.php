@@ -454,19 +454,17 @@
               
                 <div class="mb-3">
     <label for="hargaSatuan" class="form-label">Harga Satuan</label>
-    <input type="text" class="form-control" id="hargaSatuan" name="hargaSatuan" readonly value="">
+    <input type="text" class="form-control" id="hargaSatuan" name="hargaSatuan" readonly>
 </div>
 
-<div class="mb-3">
-    <label for="harga" class="form-label">Total Harga</label>
-    <div class="card border-danger text-center">
-      <div class="card-body">
-        <h5 class="card-title text-danger fw-bold mb-0" id="harga">Rp. 0</h5>
-      </div>
-    </div>
-</div>
-
-
+               <div class="mb-3">
+                <label for="harga" class="form-label">Total Harga</label>
+                <div class="card border-danger text-center">
+                  <div class="card-body">
+                    <h5 class="card-title text-danger fw-bold mb-0" id="harga">Rp. 0</h5>
+                  </div>
+                </div>
+            </div>
           </div>
         </form>
       </div>
@@ -480,38 +478,10 @@
 
             </div>
             <script>
-              function updateTotalHarga(hargaSatuan) {
-  var beratCucian = document.getElementById('beratCucian').value;
-
-  // Pastikan berat cucian valid
-  if (beratCucian && !isNaN(beratCucian) && hargaSatuan) {
-    // Menghitung total harga
-    var totalHarga = hargaSatuan * beratCucian;
-
-    // Membulatkan total harga dan pastikan tidak ada desimal
-    totalHarga = Math.round(totalHarga); // Membulatkan ke angka bulat
-
-    // Menampilkan total harga dalam format Rupiah tanpa desimal
-    document.getElementById('harga').innerText = new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0, // Tidak menampilkan angka desimal
-      maximumFractionDigits: 0  // Tidak menampilkan angka desimal
-    }).format(totalHarga);
-  } else {
-    // Menampilkan Rp 0 jika input berat cucian tidak valid
-    document.getElementById('harga').innerText = 'Rp. 0';
-  }
-}
-
-
-
-
-// Fungsi untuk update total harga
-function updateHargaSatuan() {
+               function updateHargaSatuan() {
   var jenisLayanan = document.getElementById('jenisLayanan').value;
 
-  // Jika jenis layanan belum dipilih, set harga satuan menjadi kosong
+  // Jika jenis layanan belum dipilih, set harga satuan menjadi kosong atau default
   if (!jenisLayanan) {
     document.getElementById('hargaSatuan').value = ''; // Kosongkan harga satuan
     document.getElementById('harga').innerText = 'Rp. 0'; // Set total harga ke Rp 0
@@ -542,6 +512,26 @@ function updateHargaSatuan() {
 }
 
 
+
+// Fungsi untuk update total harga
+function updateTotalHarga(hargaSatuan) {
+  var beratCucian = document.getElementById('beratCucian').value;
+  
+  if (beratCucian && !isNaN(beratCucian)) {
+    var totalHarga = hargaSatuan * beratCucian;
+
+    // Pastikan total harga dibulatkan menjadi angka bulat tanpa desimal
+    totalHarga = Math.round(totalHarga); // Membulatkan ke angka bulat
+
+    // Menampilkan total harga dalam format Rupiah tanpa desimal
+    document.getElementById('harga').innerText = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0, // Tidak menampilkan angka desimal
+      maximumFractionDigits: 0  // Tidak menampilkan angka desimal
+    }).format(totalHarga);
+  }
+}
 
 
 

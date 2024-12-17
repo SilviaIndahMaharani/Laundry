@@ -428,29 +428,28 @@
 
                 </div>
                 <div class="mb-3">
-                    <label for="kategori" class="form-label">Kategori</label>
-                    <select class="form-select" id="kategori" name="kategori" required onchange="updateHargaSatuan()">
-                        <option value="">Pilih Kategori</option>
-                        <?php
-                        // Pastikan koneksi database sudah dilakukan sebelumnya
-                        include('koneksi.php'); // Memasukkan file koneksi database
+  <label for="kategori" class="form-label">Kategori</label>
+  <select class="form-select" id="kategori" name="kategori">
+    <option value="">Pilih Kategori (Opsional)</option> <!-- Opsi kosong -->
+    <?php
+    // Koneksi ke database
+    include('koneksi.php');
 
-                        // Query untuk mendapatkan data jenis layanan
-                        $result_kategori_layanan = $conn->query("SELECT id, nama_kategori FROM kategori_layanan");
+    // Query untuk mendapatkan kategori
+    $result_kategori_layanan = $conn->query("SELECT id, nama_kategori FROM kategori_layanan");
 
-                        // Mengecek apakah ada hasil
-                        if ($result_kategori_layanan->num_rows > 0) {
-                            // Jika ada data, tampilkan sebagai option
-                            while ($row = $result_kategori_layanan->fetch_assoc()) {
-                                echo "<option value='" . $row['id'] . "'>" . $row['nama_kategori'] . "</option>";
-                            }
-                        } else {
-                            // Jika tidak ada data, tampilkan pesan alternatif
-                            echo "<option value=''>Tidak ada data</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
+    // Cek apakah ada data
+    if ($result_kategori_layanan->num_rows > 0) {
+        while ($row = $result_kategori_layanan->fetch_assoc()) {
+            echo "<option value='" . $row['id'] . "'>" . $row['nama_kategori'] . "</option>";
+        }
+    } else {
+        echo "<option value=''>Tidak ada data</option>";
+    }
+    ?>
+  </select>
+</div>
+
               
                 <div class="mb-3">
     <label for="hargaSatuan" class="form-label">Harga Satuan</label>
@@ -548,6 +547,72 @@ document.getElementById('beratCucian').addEventListener('input', function() {
     }).format(totalHarga);
   }
 });
+
+function simpanData() {
+  var tanggal = document.getElementById('tanggal').value;
+  var namaPelanggan = document.getElementById('namaPelanggan').value;
+  var beratCucian = document.getElementById('beratCucian').value;
+  var jenisLayanan = document.getElementById('jenisLayanan').value;
+  var kategori = document.getElementById('kategori').value;
+  var hargaSatuan = document.getElementById('hargaSatuan').value.replace(/[^\d]/g, ""); // Hapus format
+  var totalHarga = document.getElementById('harga').innerText.replace(/[^\d]/g, ""); // Hapus format
+
+  // Log untuk memastikan semua data diambil
+  console.log({
+    tanggal,
+    namaPelanggan,
+    beratCucian,
+    jenisLayanan,
+    kategori,
+    hargaSatuan,
+    totalHarga,
+  });
+
+  // Validasi di JavaScript (cek apakah field kosong)
+  if (!tanggal || !namaPelanggan || !beratCucian || !jenisLayanan || !hargaSatuan || !totalHarga) {
+    alert("Semua field harus diisi!");
+    return;
+  }
+
+  // Jika kategori opsional, izinkan null
+  if (!kategori) {
+    kategori = null;
+  }
+
+  var data = {
+    tanggal: tanggal,
+    namaPelanggan: namaPelanggan,
+    beratCucian: beratCucian,
+    jenisLayanan: jenisLayanan,
+    kategori: kategori,
+    hargaSatuan: hargaSatuan,
+    totalHarga: totalHarga,
+  };
+
+  // Kirim data ke backend
+  fetch('proses_pemasukan.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert('Data berhasil disimpan!');
+      } else {
+        alert('Data gagal disimpan: ' + data.message);
+      }
+    })
+    .catch((error) => {
+      console.error('Terjadi kesalahan:', error);
+    });
+}
+
+
+
+
               </script>
             
             

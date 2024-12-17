@@ -1,23 +1,19 @@
 <?php
-include('koneksi.php'); // Pastikan sudah terhubung dengan database
+include('koneksi.php'); // Menghubungkan ke database
 
-// Ambil id jenis layanan dari URL
-$id_jenis_layanan = $_GET['id'];
+$id = $_GET['id']; // Mendapatkan id jenis layanan dari URL
 
-// Query untuk mengambil harga satuan
 $query = "SELECT harga_satuan FROM jenis_layanan WHERE id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $id_jenis_layanan);
+$stmt->bind_param("i", $id);
 $stmt->execute();
-$stmt->bind_result($harga_satuan);
+$stmt->bind_result($hargaSatuan);
 $stmt->fetch();
 
-
-// Mengirimkan hasil dalam bentuk JSON
-if ($harga_satuan !== null) {
-    echo json_encode(['success' => true, 'harga_satuan' => $harga_satuan]);
+if ($hargaSatuan) {
+    echo json_encode(["success" => true, "harga_satuan" => $hargaSatuan]);
 } else {
-    echo json_encode(['success' => false]);
+    echo json_encode(["success" => false]);
 }
 
 $stmt->close();

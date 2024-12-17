@@ -1,42 +1,41 @@
 <?php
-// Menghubungkan dengan database
-include('koneksi.php'); // Pastikan sudah terhubung dengan database
+include('koneksi.php'); // Pastikan koneksi database berhasil
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Ambil data dari form
-    $tanggal = $_POST['tanggal'];
-    $namaPelanggan = $_POST['namaPelanggan'];
-    $beratCucian = $_POST['beratCucian'];
-    $jenisLayanan = $_POST['jenisLayanan'];
-    $kategori = $_POST['kategori'];
-    $hargaSatuan = $_POST['hargaSatuan'];  // Pastikan 'hargaSatuan' ada di form
+$data = json_decode(file_get_contents("php://input"), true);
 
-    // Pastikan harga satuan dan berat cucian valid (angka)
-    if (is_numeric($hargaSatuan) && is_numeric($beratCucian)) {
-        // Menghitung total harga
-        $totalHarga = $hargaSatuan * $beratCucian;
+// Log untuk memastikan data diterima
+error_log(print_r($data, true));
 
-        // Format harga satuan dan total harga menjadi format Rupiah
-        $hargaSatuanFormatted = "Rp " . number_format($hargaSatuan, 0, ',', '.');
-        $totalHargaFormatted = "Rp " . number_format($totalHarga, 0, ',', '.');
+if (!empty($data)) {
+    $tanggal = $data['tanggal'] ?? null;
+    $namaPelanggan = $data['namaPelanggan'] ?? null;
+    $beratCucian = $data['beratCucian'] ?? null;
+    $jenisLayanan = $data['jenisLayanan'] ?? null;
+    $kategori = $data['kategori'] ?? null; // Null jika kategori tidak diisi
+    $hargaSatuan = $data['hargaSatuan'] ?? null;
+    $totalHarga = $data['totalHarga'] ?? null;
 
-        // Query untuk menyimpan data ke database
-        $query = "INSERT INTO pemasukan (tanggal, nama_pelanggan, berat_cucian, jenis_layanan, kategori, harga_satuan, total_harga) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("sssiiid", $tanggal, $namaPelanggan, $beratCucian, $jenisLayanan, $kategori, $hargaSatuan, $totalHarga);
-
-        // Menjalankan query
-        if ($stmt->execute()) {
-            echo "Data berhasil disimpan! Total Harga: $totalHargaFormatted";
-        } else {
-            echo "Terjadi kesalahan dalam menyimpan data!";
-        }
-
-        $stmt->close();
-    } else {
-        echo "Harga Satuan atau Berat Cucian tidak valid!";
+    // Validasi apakah semua field penting terisi
+    if (!$tanggal || !$namaPelanggan || !$beratCucian || !$jenisLayanan || !$hargaSatuan || !$totalHarga) {
+        echo json_encode(["success" => false, "message" => "Semua field harus diisi."]);
+        exit;
     }
+
+    // Query untuk menyimpan data
+    $query = "INSERT INTO pemasukan (tanggal, nama_pelanggan, berat_cucian, jenis_layanan_id, kategori_id, harga_satuan, total_harga) 
+              VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssiidii", $tanggal, $namaPelanggan, $beratCucian, $jenisLayanan, $kategori, $hargaSatuan, $totalHarga);
+
+    if ($stmt->execute()) {
+        echo json_encode(["success" => true]);
+    } else {
+        echo json_encode(["success" => false, "message" => $stmt->error]);
+    }
+
+    $stmt->close();
+} else {
+    echo json_encode(["success" => false, "message" => "Data tidak valid."]);
 }
 
 $conn->close();
